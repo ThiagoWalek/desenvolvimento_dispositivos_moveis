@@ -1,0 +1,71 @@
+package com.example.bruno1bim
+
+import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
+import android.widget.EditText
+import android.widget.TextView
+import android.widget.NumberPicker
+import android.widget.Button
+val imc= 0
+class MainActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        val resul = findViewById<TextView>(R.id.resul)
+        val inppeso= findViewById<EditText>(R.id.inppeso)
+        val inpaltura = findViewById<EditText>(R.id.inpaltura)
+        val butao = findViewById<Button>(R.id.butao)
+
+
+        butao.setOnClickListener {
+            val peso = inppeso.text.toString().toFloatOrNull()
+            val altura = inpaltura.text.toString().toFloatOrNull()
+
+            if(peso != null && altura != null) {
+                val imc =(peso/(altura*altura))
+                resul.text="IMC: %.2f".format(imc)
+            }else{
+                resul.text="Apresente valores válidos!"
+            }
+        }
+    }
+}
+
+    fun resul(peso:Double) : String {
+
+        if (imc < 18.5) {
+            return  "Abaixo do peso"
+        } else if (imc < 24.9) {
+            return "Peso normal"
+        } else if (imc < 29.9) {
+            return  "Sobrepeso"
+        } else if (imc < 34.9) {
+            return  "Obesidade Grau I"
+        } else if (imc < 39.9) {
+            return "Obesidade Grau II"
+        } else {
+            return "Obesidade Grau III"
+        }
+
+    }
+
+/*
+IMC e suas classificações:
+
+<16 = magreza grave
+
+16 a < 17 = magreza moderada
+
+17 a < 18, 5 = magreza leve
+
+18,5 < 25 = saudável
+
+25 a < 30 = sobrepeso
+
+30 a < 35 = obesidade grau I
+
+35 a < 40 = obesidade grau II
+
+> 40 = obesidade grau III
+*/
