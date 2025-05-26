@@ -1,0 +1,72 @@
+import android.os.Bundle
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
+import com.google.ai.client.generativeai.GenerativeModel
+import com.google.ai.client.generativeai.GenerativeModelConfig
+
+class MainActivity : AppCompatActivity() {
+
+    private lateinit var etIngredients: EditText
+    private lateinit var btnGenerate: Button
+    private lateinit var tvRecipe: TextView
+    private lateinit var auth: FirebaseAuth
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        etIngredients = findViewById(R.id.etIngredients)
+        btnGenerate = findViewById(R.id.btnGenerate)
+        tvRecipe = findViewById(R.id.tvRecipe)
+        auth = FirebaseAuth.getInstance()
+
+        // Login anônimo no Firebase
+        auth.signInAnonymously()
+
+        btnGenerate.setOnClickListener {
+            val ingredients = etIngredients.text.toString()
+            if (ingredients.isNotBlank()) {
+                gerarReceitaRomantica(ingredients)
+            } else {
+                tvRecipe.text = "Digite pelo menos um ingrediente!"
+            }
+        }
+    }
+
+    private fun gerarReceitaRomantica(ingredientes: String) {
+        val prompt = """
+            Crie uma receita romântica, com:
+            1. Um nome criativo
+            2. A receita usando: $ingredientes
+            3. Uma frase de efeito para postar no Instagram
+            Use emojis e linguagem apaixonada.
+        """.trimIndent()
+
+        val generativeModel = GenerativeModel(
+            modelName = "gemini-pro",
+            config = GenerativeModelConfig(apiKey = "SUA_CHAVE_API")
+        )
+
+        generativeModel.generateContent(prompt).thenAccept { response ->
+            val resposta = response.text ?: "Nada foi gerado."
+            runOnUiThread {
+                tvRecipe.text = resposta
+            }
+
+            // Salvar no Firebase
+            val userId = auth.currentUser?.uid ?: "anonimo"
+            FirebaseDatabase.getInstance().getReference("receitas/$userId")
+                .push()
+                .setValue(resposta)
+        }.exceptionally {
+            runOnUiThread {
+                tvRecipe.text = "Erro ao gerar receita: ${it.message}"
+            }
+            null
+        }
+    }
+}
